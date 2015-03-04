@@ -1,0 +1,32 @@
+{
+  "name": "jsonld-rapper",
+  "version": "0.0.1",
+  "description": "Convert between RDF and JSON-LD using rapper",
+  "scripts": {
+    "test": "coffee test/* | tap-spec",
+    "docs": "docker -i src -o apidocs -s -n -c vs",
+    "compile": "coffee -c -o lib src",
+    "clean": "rm -r apidocs lib ; true",
+    "prepublish": "npm run compile"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kba/jsonld-rapper"
+  },
+  "author": "kba",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kba/jsonld-rapper/issues"
+  },
+  "homepage": "https://github.com/kba/jsonld-rapper",
+  "dependencies": {
+    "jsonld": "^0.3.22"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.9.1",
+    "docker": "^0.2.14",
+    "tap-spec": "^2.2.1",
+    "tapes": "^0.4.1"
+  },
+  "main": "lib/index.js"
+}
