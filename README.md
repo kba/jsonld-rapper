@@ -69,6 +69,8 @@ j2r.convert(jsonld1, 'jsonld', 'rdfxml', function (err, asRdfxml) {
   * `format`: 'application/nquads'. Since the jsonld module supports only nquads, don't change this.
   * `useRdfType`: false
   * `useNativeTypes`: false
+* `jsonldCompact`, `jsonldExpand`, `jsonldFlatten`: Options passed to jsonld's resp. function
+
 
 ### Convert
 

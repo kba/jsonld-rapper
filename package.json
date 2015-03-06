@@ -3,7 +3,7 @@
   "version": "0.0.4",
   "description": "Convert between RDF and JSON-LD using rapper",
   "scripts": {
-    "test": "coffee test/* | tap-spec",
+    "test": "coffee test/* | faucet",
     "docs": "docker -i src -o apidocs -s -n -c vs",
     "compile": "coffee -c -o lib src",
     "clean": "rm -r apidocs lib ; true",
@@ -26,7 +26,7 @@
   "devDependencies": {
     "coffee-script": "^1.9.1",
     "docker": "^0.2.14",
-    "tap-spec": "^2.2.1",
+    "faucet": "0.0.1",
     "tapes": "^0.4.1"
   },
   "main": "lib/index.js"

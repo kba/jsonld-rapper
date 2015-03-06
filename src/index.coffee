@@ -90,6 +90,7 @@ _outputTypeMap = {
 	'text/turtle':                  'turtle'       #
 	'application/nquads':           'nquads'       #
 	'application/rdf+xml':          'rdfxml'       #
+	'text/xml':                     'rdfxml'
 	'text/html':                    'html'         # HTML table
 	'application/atom+xml':         'atom'         #
 	'.nt':                          'ntriples'
@@ -147,17 +148,17 @@ _to_rdf = (input, inputType, outputType, opts, cb) ->
 # _transform_jsonld assumes the data to be in that profile
 _transform_jsonld = (input, opts, cb) ->
 	switch opts.profile
-		when JSONLD_PROFILE.FLATTENED_EXPANDED
-			cb null, input
 		when JSONLD_PROFILE.COMPACTED
 			return JsonLD.compact input, opts.expandContext, opts.jsonldCompact, cb
 		when JSONLD_PROFILE.EXPANDED
-			return JsonLD.expand input, {expandContext: opts.expandContext}, cb
+			return JsonLD.expand input, opts.jsonldExpand, cb
 		when JSONLD_PROFILE.FLATTENED
-			return JsonLD.flatten input, opts.expandContext, cb
+			return JsonLD.flatten input, opts.expandContext, opts.jsonldFlatten, cb
+		when JSONLD_PROFILE.FLATTENED_EXPANDED
+			cb null, input
 		else
 			# TODO make this extensible
-			return next _error(500, "Unsupported profile: #{profile}")
+			return cb _error(500, "Unsupported profile: #{opts.profile}")
 
 JsonLD2RDF = (moduleOpts) ->
 
@@ -168,7 +169,7 @@ JsonLD2RDF = (moduleOpts) ->
 	# Base URI for RDF serializations that require them (i.e. all of them, hence the default)
 	moduleOpts.baseURI or= 'http://example.com/FIXME/'
 	# Default JSON-LD compaction profile to use if no other profile is requested (defaults to flattened)
-	moduleOpts.profile or= JSONLD_PROFILE.FLATTENED
+	moduleOpts.profile or= JSONLD_PROFILE.FLATTENED_EXPANDED
 
 	moduleOpts.jsonldToRDF or= {
 		baseURI: moduleOpts.baseURI
@@ -182,6 +183,12 @@ JsonLD2RDF = (moduleOpts) ->
 	}
 	moduleOpts.jsonldCompact or= {
 		context: moduleOpts.expandContext
+	}
+	moduleOpts.jsonldExpand or= {
+		expandContext: moduleOpts.expandContext
+	}
+	moduleOpts.jsonldFlatten or= {
+		expandContext: moduleOpts.expandContext
 	}
 
 	# <h3>convert</h3>
