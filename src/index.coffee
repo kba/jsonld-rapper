@@ -53,9 +53,6 @@ _inputTypeMap = {
 	'application/rdf+xml':          'rdfxml'
 	'text/xml':                     'rdfxml'
 	'text/html':                    'html'
-	'.nt':                          'ntriples'
-	'.n3':                          'turtle'
-	'.rdf':                         'rdfxml'
 }
 
 ###
@@ -91,14 +88,17 @@ _outputTypeMap = {
 	'application/rdf+xml':          'rdfxml'       #
 	'text/html':                    'html'         # HTML table
 	'application/atom+xml':         'atom'         #
+	'.nt':                          'ntriples'
+	'.n3':                          'turtle'
+	'.rdf':                         'rdfxml'
 }
 
 SUPPORTED_INPUT_TYPE = {}
 SUPPORTED_OUTPUT_TYPE = {}
-for [type, rapperType] in _inputTypeMap
-	SUPPORTED_INPUT_TYPE[type] = rapperType 
-	SUPPORTED_INPUT_TYPE[rapperType] = rapperType 
-for [type, rapperType] in _outputTypeMap
+for type, rapperType of _inputTypeMap
+	SUPPORTED_INPUT_TYPE[type] = rapperType
+	SUPPORTED_INPUT_TYPE[rapperType] = rapperType
+for type, rapperType of _outputTypeMap
 	SUPPORTED_OUTPUT_TYPE[type] = rapperType 
 	SUPPORTED_OUTPUT_TYPE[rapperType] = rapperType 
 
@@ -122,8 +122,8 @@ JsonLD2RDF = (moduleOpts) ->
 	moduleOpts.profile or= JSONLD_PROFILE.FLATTENED
 
 	moduleOpts.jsonldToRDF or= {
-		baseURI: methodOpts.baseURI
-		expandContext: methodOpts.expandContext
+		baseURI: moduleOpts.baseURI
+		expandContext: moduleOpts.expandContext
 		format: 'application/nquads'
 	}
 	moduleOpts.jsonldFromRDF or= {
@@ -136,9 +136,13 @@ JsonLD2RDF = (moduleOpts) ->
 		methodOpts or= {}
 		methodOpts = Merge(moduleOpts, methodOpts)
 
-		# Spawn `rapper` with a nquads parser and a serializer producing `#{shortType}`
+		if not(inputType and outputType)
+			return cb _error(500, "Must set inputType and outputType")
+
+		# console.log "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
 		cmd = "rapper -i #{inputType} -o #{outputType} - #{methodOpts.baseURI}"
-		serializer = ChildProcess.spawn("rapper", ["-i", "nquads", "-o", shortType, "-", methodOpts.baseURI])
+		serializer = ChildProcess.spawn("rapper", ["-i", inputType, "-o", outputType, "-", methodOpts.baseURI])
+
 		serializer.on 'error', (err) -> 
 			return cb _error(500, 'Could not spawn rapper process')
 
@@ -159,7 +163,8 @@ JsonLD2RDF = (moduleOpts) ->
 		# When rapper finished without error, return the serialized RDF
 		serializer.on 'close', (code) ->
 			if code isnt 0
-				return cb _error(500,  "Rapper failed to convert #{methodOpts.inputType} to #{methodOpts.outputType}", errbuf)
+				return cb _error(500,  "Rapper failed to convert #{inputType} to #{outputType}", errbuf)
+			cb null, buf
 
 	# <h3>convert</h3>
 	# Convert the things
@@ -177,21 +182,22 @@ JsonLD2RDF = (moduleOpts) ->
 
 		# Catch the case of having to guess input is in JSON-LD
 		if inputType is 'guess'
-			if (typeof input is 'object') or (input.indexOf('@context') != -1)
+			if typeof input is 'object' or input.indexOf('@context') != -1
 				inputType = 'jsonld'
 
 		# For sake of sanity, convert with from==to should be a no-op
 		if inputType is outputType
 			return cb null, input
 
+		# console.log "Converting from '#{inputType}' to '#{outputType}'"
 		switch inputType
 			when 'jsonld'
 				if typeof input is 'string'
 					input = JSON.parse(input)
-				JsonLD.toRDF input, jsonLdToRdfOpts, (err, nquads) ->
+				JsonLD.toRDF input, methodOpts.jsonldToRDF, (err, nquads) ->
 					return cb _error(500, "jsonld-js could not convert this to N-QUADS", err) if err
 					return cb null, nquads if outputType is 'nquads'
-					return _spawn_rapper nquads, 'nquads', outputType, cb
+					return _spawn_rapper nquads, 'nquads', outputType, methodOpts, cb
 			else
 				if typeof input isnt 'string'
 					return cb _error(500, "RDF data must be a string", input)
