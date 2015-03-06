@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/kba/jsonld-rapper",
   "dependencies": {
-    "jsonld": "^0.3.22"
+    "jsonld": "^0.3.22",
+    "merge": "^1.2.0"
   },
   "devDependencies": {
     "coffee-script": "^1.9.1",
