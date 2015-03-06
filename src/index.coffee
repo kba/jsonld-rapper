@@ -132,7 +132,7 @@ JsonLD2RDF = (moduleOpts) ->
 		useNativeTypes: false
 	}
 
-	_spawn_rapper = (nquads, inputType, outputType, methodOpts, cb) ->
+	_spawn_rapper = (input, inputType, outputType, methodOpts, cb) ->
 		methodOpts or= {}
 		methodOpts = Merge(moduleOpts, methodOpts)
 
@@ -157,7 +157,7 @@ JsonLD2RDF = (moduleOpts) ->
 			errbuf += chunk.toString('utf8')
 
 		# Pipe the RDF data into the process and close stdin
-		serializer.stdin.write(nquads)
+		serializer.stdin.write(input)
 		serializer.stdin.end()
 
 		# When rapper finished without error, return the serialized RDF
