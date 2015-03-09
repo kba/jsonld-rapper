@@ -31,7 +31,7 @@ Generate docs in `apidocs`: `npm run docs`
 ## Example
 
 ```javascript
-var JsonLD2RDF = require('jsonld-rapper').JsonLD2RDF;
+var JsonLD2RDF = require('jsonld-rapper')
 
 var j2r = new JsonLD2RDF();
 
@@ -52,9 +52,6 @@ j2r.convert(jsonld1, 'jsonld', 'rdfxml', function (err, asRdfxml) {
 ### Exports
 
 * `JsonLD2RDF`: Class with the `convert` method
-* `SUPPORTED_INPUT_TYPE`: Supported input types used as the `from` argument
-* `SUPPORTED_OUTPUT_TYPE`: Supported output types used as the `from` argument
-* `JSONLD_PROFILE`: Supported JSON-LD profiles
 
 ### Options
 
@@ -75,7 +72,9 @@ j2r.convert(jsonld1, 'jsonld', 'rdfxml', function (err, asRdfxml) {
 ### Convert
 
 ```javascript
-function convert(input, from, to, methodOpts, callback)
+var JsonLD2RDF = require('jsonld-rapper');
+var j2r = new JsonLD2RDF();
+j2r.convert(input, from, to, methodOpts, callback)
 ```
 * `input`: string of RDF/JSON-LD or JSON-LD object
 * `from`: One of the supported input media types or short names
@@ -85,3 +84,22 @@ function convert(input, from, to, methodOpts, callback)
     object (including a `cause` field for errors from `rapper`) and `converted` is
     the converted RDF/JSON-LD string/object.
 
+### Constants
+
+Properties of the JsonLD2RDF instance
+
+* `SUPPORTED_INPUT_TYPE`: Supported input types used as the `from` argument
+* `SUPPORTED_OUTPUT_TYPE`: Supported output types used as the `from` argument
+* `JSONLD_PROFILE`: Supported JSON-LD profiles
+
+```javascript
+var JsonLD2RDF = require('jsonld-rapper');
+var j2r = new JsonLD2RDF();
+for (profile in j2r.JSONLD_PROFILE) {
+  console.log profile
+}
+// COMPACTED =>    'http://www.w3.org/ns/json-ld#compacted'
+// FLATTENED =>    'http://www.w3.org/ns/json-ld#flattened'
+// FLATTENED_EXPANDED =>   'http://www.w3.org/ns/json-ld#flattened+expanded'
+// EXPANDED =>     'http://www.w3.org/ns/json-ld#expanded'
+```
