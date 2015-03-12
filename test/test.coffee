@@ -87,9 +87,27 @@ testRDF_RDF_ok = (t) ->
 			cb()
 	, () -> t.end()
 
+testJSONLD_RDF_PREFIX = (t) ->
+	j2r = new JsonLD2RDF(
+		expandContext:
+			foaf: 'http://xmlns.com/foaf/0.1/'
+	)
+
+	okConversions = [
+		['jsonld', 'turtle', 'foaf:firstName']
+	]
+	Async.map okConversions, (pair, cb) ->
+		[from, to, detect] = pair
+		j2r.convert jsonld1, from, to, (err, converted) ->
+			t.notOk err, "No error #{from}->#{to}"
+			t.ok converted.indexOf(detect) > -1, "Converted result contains '#{detect}' for #{from}->#{to}"
+			cb()
+	, () -> t.end()
+
 test "JSONLD -> RDF  ==  OK", testJSONLD_RDF_ok
 test "JSONLD -> RDF  ==  FAIL", testJSONLD_RDF_notOk
 test "RDF -> JSONLD  ==  OK", testRDF_JSON_ok
 test "RDF -> RDF  ==  OK", testRDF_RDF_ok
+test "JSONLD -> RDF  (Prefixes)", testJSONLD_RDF_PREFIX
 
 # ALT: src/index.coffee

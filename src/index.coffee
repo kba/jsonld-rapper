@@ -118,7 +118,13 @@ _to_rdf = (input, inputType, outputType, opts, cb) ->
 
 	# console.log "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
 	cmd = "rapper -i #{inputType} -o #{outputType} - #{opts.baseURI}"
-	serializer = ChildProcess.spawn("rapper", ["-i", inputType, "-o", outputType, "-", opts.baseURI])
+	rapperArgs = ["-i", inputType, "-o", outputType]
+	for prefix, url of opts.expandContext
+		rapperArgs.push "-f"
+		rapperArgs.push "xmlns:#{prefix}=\"#{url}\""
+	rapperArgs.push "-"
+	rapperArgs.push opts.baseURI
+	serializer = ChildProcess.spawn("rapper", rapperArgs)
 
 	serializer.on 'error', (err) -> 
 		return cb _error(500, 'Could not spawn rapper process')
