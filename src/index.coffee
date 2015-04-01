@@ -154,11 +154,11 @@ _to_rdf = (input, inputType, outputType, opts, cb) ->
 # _transform_jsonld assumes the data to be in that profile
 _transform_jsonld = (input, opts, cb) ->
 	switch opts.profile
-		when JSONLD_PROFILE.COMPACTED
+		when JSONLD_PROFILE.COMPACTED, 'compact', 'compacted'
 			return JsonLD.compact input, opts.expandContext, opts.jsonldCompact, cb
-		when JSONLD_PROFILE.EXPANDED
+		when JSONLD_PROFILE.EXPANDED, 'expand', 'expanded'
 			return JsonLD.expand input, opts.jsonldExpand, cb
-		when JSONLD_PROFILE.FLATTENED
+		when JSONLD_PROFILE.FLATTENED, 'flatten', 'flattened'
 			return JsonLD.flatten input, opts.expandContext, opts.jsonldFlatten, cb
 		when JSONLD_PROFILE.FLATTENED_EXPANDED
 			cb null, input
