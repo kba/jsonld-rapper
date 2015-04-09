@@ -125,8 +125,8 @@ module.exports = class JsonldRapper
 
 		# Context to expand object with (default: none)
 		@expandContext or= {}
-		@expandContexts or= [@expandContext]
-		@curie = CommonContexts.withContext(@expandContexts)
+		opts.expandContexts or= [@expandContext]
+		@curie or= CommonContexts.withContext(opts.expandContexts)
 		# Base URI for RDF serializations that require them (i.e. all of them, hence the default)
 		@baseURI or= 'http://example.com/FIXME/'
 		# Default JSON-LD compaction profile to use if no other profile is requested (defaults to flattened)
