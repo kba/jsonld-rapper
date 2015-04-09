@@ -1,8 +1,9 @@
 # ## jsonld-rapper
-JsonLD       = require 'jsonld'
-Async        = require 'async'
-ChildProcess = require 'child_process'
-Merge        = require 'merge'
+JsonLD         = require 'jsonld'
+Async          = require 'async'
+ChildProcess   = require 'child_process'
+Merge          = require 'merge'
+CommonContexts = require 'jsonld-common-contexts'
 
 ###
 
@@ -10,13 +11,6 @@ Middleware for Express that handles Content-Negotiation and sends the
 right format to the client, based on the JSON-LD representation of the graph.
 
 ###
-
-_error = (statusCode, msg, cause) ->
-	err = new Error(msg)
-	err.msg = msg
-	err.statusCode = statusCode
-	err.cause = cause if cause
-	return err
 
 # <h3>Supported Types</h3>
 # The Middleware is able to output JSON-LD in these serializations
@@ -106,110 +100,66 @@ for type, rapperType of _outputTypeMap
 JSONLD_PROFILE = 
 	COMPACTED: 'http://www.w3.org/ns/json-ld#compacted'
 	FLATTENED: 'http://www.w3.org/ns/json-ld#flattened'
-	FLATTENED_EXPANDED: 'http://www.w3.org/ns/json-ld#flattened+expanded'
 	EXPANDED:  'http://www.w3.org/ns/json-ld#expanded'
+	FLATTENED_EXPANDED: 'http://www.w3.org/ns/json-ld#flattened+expanded'
+JSONLD_PROFILE.compacted = JSONLD_PROFILE.COMPACTED
+JSONLD_PROFILE.compact   = JSONLD_PROFILE.COMPACTED
+JSONLD_PROFILE.flattened = JSONLD_PROFILE.FLATTENED
+JSONLD_PROFILE.flatten   = JSONLD_PROFILE.FLATTENED
+JSONLD_PROFILE.expanded  = JSONLD_PROFILE.EXPANDED
+JSONLD_PROFILE.expand    = JSONLD_PROFILE.EXPANDED
+JSONLD_PROFILE.flattened_expanded = JSONLD_PROFILE.FLATTENED_EXPANDED
+JSONLD_PROFILE.flatten_expand = JSONLD_PROFILE.FLATTENED_EXPANDED
 
+module.exports = class JsonldRapper
 
-_to_rdf = (input, inputType, outputType, opts, cb) ->
-	opts or= {}
+	# Exported static variables / constants
+	@JSONLD_PROFILE : JSONLD_PROFILE
+	@SUPPORTED_INPUT_TYPE : SUPPORTED_INPUT_TYPE
+	@SUPPORTED_OUTPUT_TYPE : SUPPORTED_OUTPUT_TYPE
 
-	if not(inputType and outputType)
-		return cb _error(500, "Must set inputType and outputType")
+	# <h3>Constructor</h3>
+	constructor: (opts) ->
 
-	# console.log "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
-	cmd = "rapper -i #{inputType} -o #{outputType} - #{opts.baseURI}"
-	rapperArgs = ["-i", inputType, "-o", outputType]
-	for prefix, url of opts.expandContext
-		rapperArgs.push "-f"
-		rapperArgs.push "xmlns:#{prefix}=\"#{url}\""
-	rapperArgs.push "-"
-	rapperArgs.push opts.baseURI
-	serializer = ChildProcess.spawn("rapper", rapperArgs)
+		@[k] = v for k,v of opts
 
-	serializer.on 'error', (err) -> 
-		return cb _error(500, 'Could not spawn rapper process')
+		# Context to expand object with (default: none)
+		@expandContext or= {}
+		@expandContexts or= [@expandContext]
+		@curie = CommonContexts.withContext(@expandContexts)
+		# Base URI for RDF serializations that require them (i.e. all of them, hence the default)
+		@baseURI or= 'http://example.com/FIXME/'
+		# Default JSON-LD compaction profile to use if no other profile is requested (defaults to flattened)
+		@profile or= JSONLD_PROFILE.FLATTENED_EXPANDED
 
-	# When data is available, concatenate it to a buffer
-	buf=''
-	serializer.stdout.on 'data', (chunk) -> 
-		buf += chunk.toString('utf8')
-
-	# Capture error as well
-	errbuf=''
-	serializer.stderr.on 'data', (chunk) -> 
-		errbuf += chunk.toString('utf8')
-
-	# Pipe the RDF data into the process and close stdin
-	serializer.stdin.write(input)
-	serializer.stdin.end()
-
-	# When rapper finished without error, return the serialized RDF
-	serializer.on 'close', (code) ->
-		if code isnt 0
-			return cb _error(500,  "Rapper failed to convert #{inputType} to #{outputType}", errbuf)
-		cb null, buf
-
-
-# When parsing N-QUADS, jsonld produces data like in flat, expanded 
-# _transform_jsonld assumes the data to be in that profile
-_transform_jsonld = (input, opts, cb) ->
-	switch opts.profile
-		when JSONLD_PROFILE.COMPACTED, 'compact', 'compacted'
-			return JsonLD.compact input, opts.expandContext, opts.jsonldCompact, cb
-		when JSONLD_PROFILE.EXPANDED, 'expand', 'expanded'
-			return JsonLD.expand input, opts.jsonldExpand, cb
-		when JSONLD_PROFILE.FLATTENED, 'flatten', 'flattened'
-			return JsonLD.flatten input, opts.expandContext, opts.jsonldFlatten, cb
-		when JSONLD_PROFILE.FLATTENED_EXPANDED
-			cb null, input
-		else
-			# TODO make this extensible
-			return cb _error(500, "Unsupported profile: #{opts.profile}")
-
-JsonLD2RDF = (moduleOpts) ->
-
-	# <h3>Options</h3>
-	moduleOpts or= {}
-	# Context to expand object with (default: none)
-	moduleOpts.expandContext or= {}
-	# Base URI for RDF serializations that require them (i.e. all of them, hence the default)
-	moduleOpts.baseURI or= 'http://example.com/FIXME/'
-	# Default JSON-LD compaction profile to use if no other profile is requested (defaults to flattened)
-	moduleOpts.profile or= JSONLD_PROFILE.FLATTENED_EXPANDED
-
-	moduleOpts.jsonldToRDF or= {
-		baseURI: moduleOpts.baseURI
-		expandContext: moduleOpts.expandContext
-		format: 'application/nquads'
-	}
-	moduleOpts.jsonldFromRDF or= {
-		format: 'application/nquads'
-		useRdfType: false
-		useNativeTypes: false
-	}
-	moduleOpts.jsonldCompact or= {
-		context: moduleOpts.expandContext
-	}
-	moduleOpts.jsonldExpand or= {
-		expandContext: moduleOpts.expandContext
-	}
-	moduleOpts.jsonldFlatten or= {
-		expandContext: moduleOpts.expandContext
-	}
+		@jsonld_toRDF or= {
+			baseURI: @baseURI
+			expandContext: @curie.namespaces('jsonld')
+			format: 'application/nquads'
+		}
+		@jsonld_fromRDF or= {
+			format: 'application/nquads'
+			useRdfType: false
+			useNativeTypes: false
+		}
+		@jsonld_compact or= { context: @curie.namespaces('jsonld') }
+		@jsonld_expand  or= { expandContext: @curie.namespaces('jsonld') }
+		@jsonld_flatten or= { expandContext: @curie.namespaces('jsonld') }
 
 	# <h3>convert</h3>
 	# Convert the things
-	convert = (input, from, to, methodOpts, cb) ->
+	convert : (input, from, to, methodOpts, cb) ->
+
+		self = this
 
 		if typeof methodOpts is 'function'
-			cb = methodOpts
-			methodOpts = {}
-		methodOpts = Merge(moduleOpts, methodOpts)
+			[cb, methodOpts] = [methodOpts, {}]
+		methodOpts = Merge(this, methodOpts)
 
 		inputType = SUPPORTED_INPUT_TYPE[from]
-		return cb _error(406, "Unsupported input format #{from}") if not inputType
+		return cb @_error(406, "Unsupported input format #{from}") if not inputType
 		outputType = SUPPORTED_OUTPUT_TYPE[to] 
-		return cb _error(406, "Unsupported output format #{to}") if not outputType
+		return cb @_error(406, "Unsupported output format #{to}") if not outputType
 
 		# Catch the case of having to guess input is in JSON-LD
 		if inputType is 'guess'
@@ -218,6 +168,7 @@ JsonLD2RDF = (moduleOpts) ->
 
 		# For sake of sanity, convert with from==to should be a no-op, except when
 		# doing JSON-LD profile transformations
+		# TODO
 		if inputType isnt 'jsonld' and inputType is outputType
 			return cb null, input
 
@@ -229,40 +180,110 @@ JsonLD2RDF = (moduleOpts) ->
 					input = JSON.parse(input)
 				# to JSON-LD
 				if outputType is 'jsonld'
-					_transform_jsonld input, methodOpts, cb
+					@_transform_jsonld input, methodOpts, cb
 				# to RDF
 				else
-					JsonLD.toRDF input, methodOpts.jsonldToRDF, (err, nquads) ->
-						return cb _error(400, "jsonld-js could not convert this to N-QUADS", err) if err
+					JsonLD.toRDF input, methodOpts.jsonld_toRDF, (err, nquads) ->
+						return cb self._error(400, "jsonld-js could not convert this to N-QUADS", err) if err
 						return cb null, nquads if outputType is 'nquads'
-						return _to_rdf nquads, 'nquads', outputType, methodOpts, cb
+						return self._to_rdf nquads, 'nquads', outputType, methodOpts, cb
 
 		# Convert an RDF string / object ...
 		else 
 			if typeof input isnt 'string'
-				return cb _error(500, "RDF data must be a string", input)
+				return cb @_error(500, "RDF data must be a string", input)
 			# to JSON-LD
 			if outputType is 'jsonld'
-				return _to_rdf input, inputType, 'nquads', methodOpts, (err, nquads) ->
-					return cb _error(400, "rapper could not convert this to N-QUADS", err) if err
-					JsonLD.fromRDF nquads, methodOpts.jsonldFromRDF, (err, jsonld1) ->
-						return cb _error(500, "JSON-LD failed to parse the N-QUADS", err) if err
-						_transform_jsonld jsonld1, methodOpts, cb
+				return @_to_rdf input, inputType, 'nquads', methodOpts, (err, nquads) ->
+					return cb self._error(400, "rapper could not convert this to N-QUADS", err) if err
+					JsonLD.fromRDF nquads, methodOpts.jsonld_fromRDF, (err, jsonld1) ->
+						return cb self._error(500, "JSON-LD failed to parse the N-QUADS", err) if err
+						self._transform_jsonld jsonld1, methodOpts, cb
 			# to RDF
 			else 
-				return _to_rdf input, inputType, outputType, methodOpts, (err, rdf) ->
-					return cb _error(500, "rapper could not convert this to N-QUADS", err) if err
+				return @_to_rdf input, inputType, outputType, methodOpts, (err, rdf) ->
+					return cb self._error(500, "rapper could not convert this to N-QUADS", err) if err
 					return cb null, rdf
 
-	# Return
-	return {
-		convert:               convert
-		JSONLD_PROFILE:        JSONLD_PROFILE
-		SUPPORTED_INPUT_TYPE:  SUPPORTED_INPUT_TYPE
-		SUPPORTED_OUTPUT_TYPE: SUPPORTED_OUTPUT_TYPE
-	}
+	_error : (statusCode, msg, cause) ->
+		err = new Error(msg)
+		err.msg = msg
+		err.statusCode = statusCode
+		err.cause = cause if cause
+		return err
 
-# ## Module exports	
-module.exports = JsonLD2RDF
+	_to_rdf: (input, inputType, outputType, opts, cb) ->
+		self = this
+		opts or= {}
+
+		if not(inputType and outputType)
+			return cb @_error(500, "Must set inputType and outputType")
+
+		# If there are namespaces defined, we can't pass those directly to rapper unfortunately
+		# Therefore:
+		if opts.expandContext and Object.keys(opts.expandContext).length > 0
+			switch inputType
+				when 'turtle', 'n3', 'trig'
+					input = @curie.namespaces('turtle') + input
+				when 'rdfxml'
+					# console.log "BEFORE"
+					# console.log input
+					input = input.replace('>', @curie.namespaces('rdfxml') + '>')
+					# console.log "AFTER"
+					# console.log input
+				when 'nquads'
+					null # Nothing to do, no namespaces in N-QUADS
+				else
+					return cb @_error(400, "Can't inject namespaces for inputType #{inputType}")
+
+		# console.log "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
+		cmd = "rapper -i #{inputType} -o #{outputType} - #{opts.baseURI}"
+		rapperArgs = ["-i", inputType, "-o", outputType]
+		rapperArgs.push arg for arg in @curie.namespaces('rapper-args')
+		rapperArgs.push "-"
+		rapperArgs.push opts.baseURI
+		serializer = ChildProcess.spawn("rapper", rapperArgs, {
+			env:
+				GNOME_KEYRING_CONTROL: null
+		})
+
+		serializer.on 'error', (err) -> 
+			return cb self._error(500, 'Could not spawn rapper process')
+
+		# When data is available, concatenate it to a buffer
+		buf=''
+		serializer.stdout.on 'data', (chunk) -> 
+			buf += chunk.toString('utf8')
+
+		# Capture error as well
+		errbuf=''
+		serializer.stderr.on 'data', (chunk) -> 
+			errbuf += chunk.toString('utf8')
+
+		# Pipe the RDF data into the process and close stdin
+		serializer.stdin.write(input)
+		serializer.stdin.end()
+
+		# When rapper finished without error, return the serialized RDF
+		serializer.on 'close', (code) ->
+			if code isnt 0
+				return cb self._error(500,  "Rapper failed to convert #{inputType} to #{outputType}", errbuf)
+			cb null, buf
+
+	# When parsing N-QUADS, jsonld produces data like in flat, expanded 
+	# _transform_jsonld assumes the data to be in that profile
+	_transform_jsonld : (input, opts, cb) ->
+		switch opts.profile
+			when JSONLD_PROFILE.COMPACTED, 'compact', 'compacted'
+				return JsonLD.compact input, @curie.namespaces('jsonld'), opts.jsonld_compact, cb
+			when JSONLD_PROFILE.EXPANDED, 'expand', 'expanded'
+				return JsonLD.expand input, opts.jsonld_expand, cb
+			when JSONLD_PROFILE.FLATTENED, 'flatten', 'flattened'
+				return JsonLD.flatten input, @curie.namespaces('jsonld'), opts.jsonld_flatten, cb
+			when JSONLD_PROFILE.FLATTENED_EXPANDED
+				cb null, input
+			else
+				# TODO make this extensible
+				return cb @_error(500, "Unsupported profile: #{opts.profile}")
 
 #ALT: test/middleware.coffee
