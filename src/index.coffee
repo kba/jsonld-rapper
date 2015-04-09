@@ -1,4 +1,4 @@
-# ## JsonLdMiddleware
+# ## jsonld-rapper
 JsonLD       = require 'jsonld'
 Async        = require 'async'
 ChildProcess = require 'child_process'
