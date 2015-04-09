@@ -21,13 +21,14 @@
   "homepage": "https://github.com/kba/jsonld-rapper",
   "dependencies": {
     "jsonld": "^0.3.22",
+    "jsonld-common-contexts": "0.0.9",
     "merge": "^1.2.0"
   },
   "devDependencies": {
     "coffee-script": "^1.9.1",
     "docker": "^0.2.14",
     "faucet": "0.0.1",
-    "tapes": "^0.4.1"
+    "tape": "^4.0.0"
   },
   "main": "lib/index.js"
 }
