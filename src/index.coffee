@@ -149,7 +149,6 @@ module.exports = class JsonldRapper
 	# <h3>convert</h3>
 	# Convert the things
 	convert : (input, from, to, methodOpts, cb) ->
-
 		self = this
 
 		if typeof methodOpts is 'function'
