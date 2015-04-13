@@ -120,7 +120,7 @@ module.exports = class JsonldRapper
 
 	# <h3>Constructor</h3>
 	constructor: (opts) ->
-
+		opts or= {}
 		@[k] = v for k,v of opts
 
 		# Context to expand object with (default: none)
