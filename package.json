@@ -1,6 +1,6 @@
 {
   "name": "jsonld-rapper",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Convert between RDF and JSON-LD using rapper",
   "scripts": {
     "test": "coffee test/* | faucet",
