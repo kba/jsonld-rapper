@@ -55,6 +55,7 @@ j2r.convert(jsonld1, 'jsonld', 'rdfxml', function (err, asRdfxml) {
 
 ### Options
 
+* `rapperBinary`: Absolute path or $PATH-relative path to the `rapper(1)` binary
 * `baseURI`:  TODO
 * `expandContext`: TODO
 * `profile`: JSON-LD profile to use when outputting JSON-LD

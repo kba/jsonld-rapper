@@ -3,6 +3,7 @@ JsonLD         = require 'jsonld'
 Async          = require 'async'
 ChildProcess   = require 'child_process'
 Merge          = require 'merge'
+Fs             = require 'fs'
 CommonContexts = require 'jsonld-common-contexts'
 
 ###
@@ -123,6 +124,11 @@ module.exports = class JsonldRapper
 		opts or= {}
 		@[k] = v for k,v of opts
 
+		# Path to rapper
+		@rapperBinary or= '/usr/bin/rapper'
+		if not Fs.existsSync @rapperBinary
+			throw new Error("Rapper binary doesn't exist. Make sure it is installed at #{@rapperBinary} or pass rapperBinary to constructor!");
+
 		# Context to expand object with (default: none)
 		@expandContext or= {}
 		opts.expandContexts or= [@expandContext]
@@ -236,12 +242,11 @@ module.exports = class JsonldRapper
 					return cb @_error(400, "Can't inject namespaces for inputType #{inputType}")
 
 		# console.log "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
-		cmd = "rapper -i #{inputType} -o #{outputType} - #{opts.baseURI}"
 		rapperArgs = ["-i", inputType, "-o", outputType]
 		rapperArgs.push arg for arg in @curie.namespaces('rapper-args')
 		rapperArgs.push "-"
 		rapperArgs.push opts.baseURI
-		serializer = ChildProcess.spawn("rapper", rapperArgs, {
+		serializer = ChildProcess.spawn(@rapperBinary, rapperArgs, {
 			env:
 				GNOME_KEYRING_CONTROL: null
 		})

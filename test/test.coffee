@@ -38,7 +38,6 @@ bare_rdfxml = '''
 
 testJSONLD_RDF_ok = (t) ->
 	j2r = new JsonldRapper()
-	console.log j2r.convert
 
 	okConversions = [
 		['jsonld', 'turtle', '@prefix']
