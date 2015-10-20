@@ -22,7 +22,7 @@
   "dependencies": {
     "async": "^1.4.2",
     "deepmerge": "^0.2.7",
-    "jsonld": "^0.3.22",
+    "jsonld": "^0.4.2",
     "jsonld-common-contexts": "0.0.10",
     "merge": "^1.2.0"
   },
