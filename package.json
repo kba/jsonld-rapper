@@ -20,10 +20,10 @@
   },
   "homepage": "https://github.com/kba/jsonld-rapper",
   "dependencies": {
-    "async": "^1.4.2",
+    "async": "^1.5.0",
     "deepmerge": "^0.2.7",
     "jsonld": "^0.4.2",
-    "jsonld-common-contexts": "0.0.11",
+    "jsonld-common-contexts": "0.0.12",
     "merge": "^1.2.0"
   },
   "devDependencies": {
