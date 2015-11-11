@@ -78,7 +78,8 @@ _outputTypeMap = {
 	'application/ld+json':          'jsonld'       #
 	'application/rdf+json':         'json'         #
 	'application/rdf-triples+json': 'json-triples' #
-	'application/rdf-triples':      'ntriples'     #
+	'application/ntriples':         'ntriples'     #
+	'application/n-triples':        'ntriples'     #
 	'text/vnd.graphviz':            'dot'          #
 	'application/x-turtle':         'turtle'       #
 	'text/rdf+n3':                  'turtle'       #
