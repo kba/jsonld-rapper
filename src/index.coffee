@@ -156,7 +156,6 @@ module.exports = class JsonldRapper
 	# <h3>convert</h3>
 	# Convert the things
 	convert : (input, from, to, methodOpts, cb) ->
-		self = this
 
 		if typeof methodOpts is 'function'
 			[cb, methodOpts] = [methodOpts, {}]
@@ -189,10 +188,10 @@ module.exports = class JsonldRapper
 					@_transform_jsonld input, methodOpts, cb
 				# to RDF
 				else
-					JsonLD.toRDF input, methodOpts.jsonld_toRDF, (err, nquads) ->
-						return cb self._error(400, "jsonld-js could not convert this to N-QUADS", err) if err
+					JsonLD.toRDF input, methodOpts.jsonld_toRDF, (err, nquads) =>
+						return cb @_error(400, "jsonld-js could not convert this to N-QUADS", err) if err
 						return cb null, nquads if outputType is 'nquads'
-						return self._to_rdf nquads, 'nquads', outputType, methodOpts, cb
+						return @_to_rdf nquads, 'nquads', outputType, methodOpts, cb
 
 		# Convert an RDF string / object ...
 		else 
@@ -200,15 +199,15 @@ module.exports = class JsonldRapper
 				return cb @_error(500, "RDF data must be a string", input)
 			# to JSON-LD
 			if outputType is 'jsonld'
-				return @_to_rdf input, inputType, 'nquads', methodOpts, (err, nquads) ->
-					return cb self._error(400, "rapper could not convert this to N-QUADS", err) if err
-					JsonLD.fromRDF nquads, methodOpts.jsonld_fromRDF, (err, jsonld1) ->
-						return cb self._error(500, "JSON-LD failed to parse the N-QUADS", err) if err
-						self._transform_jsonld jsonld1, methodOpts, cb
+				return @_to_rdf input, inputType, 'nquads', methodOpts, (err, nquads) =>
+					return cb @_error(400, "rapper could not convert this to N-QUADS", err) if err
+					JsonLD.fromRDF nquads, methodOpts.jsonld_fromRDF, (err, jsonld1) =>
+						return cb @_error(500, "JSON-LD failed to parse the N-QUADS", err) if err
+						@_transform_jsonld jsonld1, methodOpts, cb
 			# to RDF
 			else 
-				return @_to_rdf input, inputType, outputType, methodOpts, (err, rdf) ->
-					return cb self._error(500, "rapper could not convert this to N-QUADS", err) if err
+				return @_to_rdf input, inputType, outputType, methodOpts, (err, rdf) =>
+					return cb @_error(500, "rapper could not convert this to N-QUADS", err) if err
 					return cb null, rdf
 
 	_error : (statusCode, msg, cause) ->
@@ -219,7 +218,6 @@ module.exports = class JsonldRapper
 		return err
 
 	_to_rdf: (input, inputType, outputType, opts, cb) ->
-		self = this
 		opts or= {}
 
 		if not(inputType and outputType)
@@ -253,7 +251,7 @@ module.exports = class JsonldRapper
 		})
 
 		serializer.on 'error', (err) -> 
-			return cb self._error(500, 'Could not spawn rapper process')
+			return cb @_error(500, 'Could not spawn rapper process')
 
 		# When data is available, concatenate it to a buffer
 		buf=''
@@ -270,9 +268,9 @@ module.exports = class JsonldRapper
 		serializer.stdin.end()
 
 		# When rapper finished without error, return the serialized RDF
-		serializer.on 'close', (code) ->
+		serializer.on 'close', (code) =>
 			if code isnt 0
-				return cb self._error(500,  "Rapper failed to convert #{inputType} to #{outputType}", errbuf)
+				return cb @_error(500,  "Rapper failed to convert #{inputType} to #{outputType}", errbuf)
 			cb null, buf
 
 	# When parsing N-QUADS, jsonld produces data like in flat, expanded 
