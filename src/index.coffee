@@ -4,6 +4,7 @@ Async          = require 'async'
 ChildProcess   = require 'child_process'
 Merge          = require 'merge'
 Fs             = require 'fs'
+N3             = require 'n3'
 CommonContexts = require 'jsonld-common-contexts'
 
 ###
@@ -37,6 +38,7 @@ _inputTypeMap = {
 	'*':                            'guess'    # let rapper guess from the data
 	'application/json':             'jsonld'
 	'application/ld+json':          'jsonld'
+	'application/n3+json':          'json3'
 	'application/rdf+json':         'json'
 	'application/rdf-triples+json': 'json'
 	'application/rdf-triples':      'ntriples'
@@ -76,6 +78,7 @@ _outputTypeMap = {
 	'*':                            'turtle'       # Default to Turtle
 	'application/json':             'jsonld'       #
 	'application/ld+json':          'jsonld'       #
+	'application/n3+json':          'json3'        #
 	'application/rdf+json':         'json'         #
 	'application/rdf-triples+json': 'json-triples' #
 	'application/ntriples':         'ntriples'     #
@@ -181,29 +184,49 @@ module.exports = class JsonldRapper
 
 		# Convert a JSON-LD string / object ...
 		if inputType is 'jsonld'
-				if typeof input is 'string'
-					input = JSON.parse(input)
-				# to JSON-LD
-				if outputType is 'jsonld'
-					@_transform_jsonld input, methodOpts, cb
-				# to RDF
-				else
-					JsonLD.toRDF input, methodOpts.jsonld_toRDF, (err, nquads) =>
-						return cb @_error(400, "jsonld-js could not convert this to N-QUADS", err) if err
+			input = JSON.parse(input) if typeof input is 'string'
+			# to JSON-LD
+			if outputType is 'jsonld'
+				@_jsonld_to_jsonld input, methodOpts, cb
+			# to RDF or JSON-N3
+			else
+				JsonLD.toRDF input, methodOpts.jsonld_toRDF, (err, nquads) =>
+					return cb @_error(400, "jsonld-js could not convert this to N-QUADS", err) if err
+					if outputType is 'json3'
+					else
 						return cb null, nquads if outputType is 'nquads'
 						return @_to_rdf nquads, 'nquads', outputType, methodOpts, cb
+
+		# Convert a JSON-N3 string / object
+		else if inputType is 'json3'
+			input = JSON.parse(input) if typeof input is 'string'
+			if outputType in ['turtle', 'n3']
+				@_json3_to_turtle input, methodOpts.jsonld_toRDF, cb
+			else if outputType is 'nquads'
+				@_json3_to_nquads input, cb
+			else
+				@_json3_to_nquads input, (err, nquads) =>
+					if outputType is 'jsonld'
+						JsonLD.fromRDF nquads, methodOpts.jsonld_fromRDF, (err, jsonld1) =>
+							return cb @_error(500, "JSON-LD failed to parse the N-QUADS", err) if err
+							return @_jsonld_to_jsonld jsonld1, methodOpts, cb
+					else
+						return @_to_rdf nquads, nquads, outputType, methodOpts, cb
 
 		# Convert an RDF string / object ...
 		else 
 			if typeof input isnt 'string'
 				return cb @_error(500, "RDF data must be a string", input)
-			# to JSON-LD
-			if outputType is 'jsonld'
-				return @_to_rdf input, inputType, 'nquads', methodOpts, (err, nquads) =>
+			# to JSON-LD or JSON-N3
+			if outputType in ['jsonld', 'json3']
+				@_to_rdf input, inputType, 'nquads', methodOpts, (err, nquads) =>
 					return cb @_error(400, "rapper could not convert this to N-QUADS", err) if err
-					JsonLD.fromRDF nquads, methodOpts.jsonld_fromRDF, (err, jsonld1) =>
-						return cb @_error(500, "JSON-LD failed to parse the N-QUADS", err) if err
-						@_transform_jsonld jsonld1, methodOpts, cb
+					if outputType is 'json3'
+						return @_nquads_to_json3 nquads, cb
+					else
+						JsonLD.fromRDF nquads, methodOpts.jsonld_fromRDF, (err, jsonld1) =>
+							return cb @_error(500, "JSON-LD failed to parse the N-QUADS", err) if err
+							@_jsonld_to_jsonld jsonld1, methodOpts, cb
 			# to RDF
 			else 
 				return @_to_rdf input, inputType, outputType, methodOpts, (err, rdf) =>
@@ -274,8 +297,8 @@ module.exports = class JsonldRapper
 			cb null, buf
 
 	# When parsing N-QUADS, jsonld produces data like in flat, expanded 
-	# _transform_jsonld assumes the data to be in that profile
-	_transform_jsonld : (input, opts, cb) ->
+	# _jsonld_to_jsonld assumes the data to be in that profile
+	_jsonld_to_jsonld : (input, opts, cb) ->
 		switch opts.profile
 			when JSONLD_PROFILE.COMPACTED, 'compact', 'compacted'
 				return JsonLD.compact input, @curie.namespaces('jsonld'), opts.jsonld_compact, cb
@@ -289,4 +312,21 @@ module.exports = class JsonldRapper
 				# TODO make this extensible
 				return cb @_error(500, "Unsupported profile: #{opts.profile}")
 
-#ALT: test/middleware.coffee
+	_json3_to_nquads : (input, cb) ->
+		writer = N3.Writer(format: 'n-triples')
+		writer.addTriple triple for triple in input
+		return writer.end cb
+
+	_json3_to_turtle: (input, prefixes, cb) ->
+		writer = N3.Writer({prefixes})
+		writer.addTriple triple for triple in input
+		return writer.end cb
+
+	_nquads_to_json3: (nquads, cb) ->
+		ret = []
+		parser = N3.Parser(format: 'n-triples')
+		parser.parse (err, triple) -> ret.push triple if triple
+		parser.addChunk nquads
+		cb null, ret
+
+#ALT: test/test.coffee
