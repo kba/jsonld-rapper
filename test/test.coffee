@@ -5,8 +5,7 @@ jsonld = require 'jsonld'
 Colors = require 'colors'
 
 JsonldRapper = require('../src')
-DEBUG=false
-DEBUG=true
+DEBUG=process.env.DEBUG
 
 testConversions = (t, ok, notOk) ->
 	j2r = new JsonldRapper
@@ -22,7 +21,7 @@ testConversions = (t, ok, notOk) ->
 					t.notOk err, "No error #{from}->#{to}"
 					return done() unless data
 					unless data.indexOf(detect) > -1
-						console.log data.red if DEBUG
+						console.log data.red
 						t.fail "Conversion doesn't contain '#{detect}' for #{from}->#{to}"
 					else if DEBUG
 						console.log data.green if DEBUG
