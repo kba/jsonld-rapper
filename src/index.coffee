@@ -296,8 +296,8 @@ module.exports = class JsonldRapper
 		# When rapper finished without error, return the serialized RDF
 		serializer.on 'close', (code) =>
 			if code isnt 0
-				return cb @_error(500,  "Rapper failed to convert #{inputType} to #{outputType}", errbuf)
-			cb null, buf
+				return cb @_error(500,  "Rapper failed to convert '#{inputType}' to '#{outputType}': #{input}", errbuf)
+			return cb null, buf
 
 	# When parsing N-QUADS, jsonld produces data like in flat, expanded 
 	# _jsonld_to_jsonld assumes the data to be in that profile

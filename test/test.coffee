@@ -6,7 +6,7 @@ Colors = require 'colors'
 
 JsonldRapper = require('../src')
 DEBUG=false
-# DEBUG=true
+DEBUG=true
 
 testConversions = (t, ok, notOk) ->
 	j2r = new JsonldRapper
