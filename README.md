@@ -5,15 +5,16 @@ Convert between RDF and JSON-LD using rapper
 
 ## Installation
 
-This module requires the `rapper` utility to be in the `$PATH`.
+This module requires the `rapper` utility, version **>=2.0.14** to be in `$PATH`.
 
-From https://github.com/ruby-rdf/rdf-raptor:
+If it isn't in the `$PATH`, override `rapperBinary`.
+
+Based on https://github.com/ruby-rdf/rdf-raptor:
 ```
 % [sudo] port install raptor             # Mac OS X with MacPorts
 % [sudo] fink install raptor-bin         # Mac OS X with Fink
 % brew install raptor                    # Mac OS X with Homebrew
-% [sudo] aptitude install raptor-utils   # Ubuntu / Debian with aptitude
-% [sudo] apt-get install libraptor2-0    # Ubuntu / Debian with apt-get
+% [sudo] apt-get install raptor2-utils   # Ubuntu / Debian with apt-get
 % [sudo] yum install raptor2             # Fedora / CentOS / RHEL
 % [sudo] zypper install raptor           # openSUSE
 % [sudo] emerge raptor                   # Gentoo Linux
