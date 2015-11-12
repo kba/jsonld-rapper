@@ -26,7 +26,8 @@
     "jsonld": "^0.4.2",
     "jsonld-common-contexts": "0.0.12",
     "merge": "^1.2.0",
-    "n3": "^0.4.5"
+    "n3": "^0.4.5",
+    "which": "^1.2.0"
   },
   "devDependencies": {
     "coffee-script": "^1.9.1",

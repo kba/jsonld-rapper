@@ -5,6 +5,7 @@ ChildProcess   = require 'child_process'
 Merge          = require 'merge'
 Fs             = require 'fs'
 N3             = require 'n3'
+Which          = require 'which'
 CommonContexts = require 'jsonld-common-contexts'
 
 ###
@@ -129,9 +130,9 @@ module.exports = class JsonldRapper
 		@[k] = v for k,v of opts
 
 		# Path to rapper
-		@rapperBinary or= '/usr/bin/rapper'
+		@rapperBinary or= Which.sync 'rapper'
 		if not Fs.existsSync @rapperBinary
-			throw new Error("Rapper binary doesn't exist. Make sure it is installed at #{@rapperBinary} or pass rapperBinary to constructor!");
+			throw new Error("Rapper binary doesn't exist. Make sure it is installed at #{@rapperBinary} or pass rapperBinary to constructor!")
 
 		# Context to expand object with (default: none)
 		@expandContext or= {}
