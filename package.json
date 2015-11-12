@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Convert between RDF and JSON-LD using rapper",
   "scripts": {
-    "test": "coffee test/* | faucet",
+    "test": "coffee test/*",
     "docs": "docker -i src -o apidocs -s -n -c vs",
     "compile": "coffee -c -o lib src",
     "clean": "rm -r apidocs lib ; true",
