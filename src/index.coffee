@@ -8,6 +8,8 @@ N3             = require 'n3'
 Which          = require 'which'
 CommonContexts = require 'jsonld-common-contexts'
 
+log = require('infolis-logging')(module)
+
 ###
 
 Middleware for Express that handles Content-Negotiation and sends the
@@ -183,7 +185,7 @@ module.exports = class JsonldRapper
 		if inputType isnt 'jsonld' and inputType is outputType
 			return cb null, input
 
-		# console.log "Converting from '#{inputType}' to '#{outputType}'"
+		log.debug "Converting from '#{inputType}' to '#{outputType}'"
 
 		# Convert a JSON-LD string / object ...
 		if inputType is 'jsonld'
@@ -196,6 +198,7 @@ module.exports = class JsonldRapper
 				JsonLD.toRDF input, methodOpts.jsonld_toRDF, (err, nquads) =>
 					return cb @_error(400, "jsonld-js could not convert this to N-QUADS", err) if err
 					if outputType is 'json3'
+						@_nquads_to_json3 nquads, cb
 					else
 						return cb null, nquads if outputType is 'nquads'
 						return @_to_rdf nquads, 'nquads', outputType, methodOpts, cb
@@ -256,17 +259,13 @@ module.exports = class JsonldRapper
 				when 'turtle', 'n3', 'trig'
 					input = @curie.namespaces('turtle') + input
 				when 'rdfxml'
-					# console.log "BEFORE"
-					# console.log input
 					input = input.replace('>', @curie.namespaces('rdfxml') + '>')
-					# console.log "AFTER"
-					# console.log input
 				when 'nquads'
 					null # Nothing to do, no namespaces in N-QUADS
 				else
 					return cb @_error(400, "Can't inject namespaces for inputType #{inputType}")
 
-		# console.log "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
+		log.silly "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
 		rapperArgs = ["-i", inputType, "-o", outputType]
 		rapperArgs.push arg for arg in @curie.namespaces('rapper-args')
 		rapperArgs.push "-"
