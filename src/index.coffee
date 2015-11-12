@@ -132,7 +132,9 @@ module.exports = class JsonldRapper
 		# Path to rapper
 		@rapperBinary or= Which.sync 'rapper'
 		if not Fs.existsSync @rapperBinary
-			throw new Error("Rapper binary doesn't exist. Make sure it is installed at #{@rapperBinary} or pass rapperBinary to constructor!")
+			throw new Error("""Rapper binary doesn't exist. Make sure
+				it is installed at #{@rapperBinary} or
+				pass rapperBinary to constructor!""")
 
 		# Context to expand object with (default: none)
 		@expandContext or= {}

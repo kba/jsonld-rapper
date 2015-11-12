@@ -20,6 +20,7 @@ testConversions = (t, ok, notOk) ->
 				j2r.convert input, from, to, (err, data) ->
 					data = JSON.stringify(data) unless typeof data is 'string'
 					t.notOk err, "No error #{from}->#{to}"
+					return done() unless data
 					unless data.indexOf(detect) > -1
 						console.log data.red if DEBUG
 						t.fail "Conversion doesn't contain '#{detect}' for #{from}->#{to}"
@@ -29,7 +30,7 @@ testConversions = (t, ok, notOk) ->
 			, cb
 		,
 		(cb) ->
-			Async.each notOk, ([input, from, to, expect], done) ->
+			Async.eachSeries notOk, ([input, from, to, expect], done) ->
 				j2r.convert input, from, to, (err, data) ->
 					t.ok err, "Expect error '#{expect}' for #{from}->#{to}"
 					unless err.cause?.indexOf(expect) > -1
@@ -60,8 +61,7 @@ fixtures =
 		}
 	]
 	nquads: """
-	<urn:fake:johndoe> <http://xmlns.com/foaf/0.1/firstName> "John" .
-	"""
+	<urn:fake:johndoe> <http://xmlns.com/foaf/0.1/firstName> "John" ."""
 	turtle: '''@base <http://example.com/FIXME/> .
 	@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 	<urn:fake:johndoe>
