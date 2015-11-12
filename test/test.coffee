@@ -60,8 +60,7 @@ fixtures =
 			object: '"John"'
 		}
 	]
-	nquads: """
-	<urn:fake:johndoe> <http://xmlns.com/foaf/0.1/firstName> "John" ."""
+	nquads: """<urn:fake:johndoe> <http://xmlns.com/foaf/0.1/firstName> "John" ."""
 	turtle: '''@base <http://example.com/FIXME/> .
 	@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 	<urn:fake:johndoe>
