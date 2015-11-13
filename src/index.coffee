@@ -44,7 +44,7 @@ _inputTypeMap = {
 	'application/n3+json':          'json3'
 	'application/rdf+json':         'json'
 	'application/rdf-triples+json': 'json'
-	'application/rdf-triples':      'ntriples'
+	'application/rdf-triples':      'nquads'
 	'application/x-turtle':         'turtle'
 	'text/rdf+n3':                  'turtle'
 	'application/trig':             'trig'
@@ -84,6 +84,7 @@ _outputTypeMap = {
 	'application/n3+json':          'json3'        #
 	'application/rdf+json':         'json'         #
 	'application/rdf-triples+json': 'json-triples' #
+	'application/rdf-triples':      'ntriples'     #
 	'application/ntriples':         'ntriples'     #
 	'application/n-triples':        'ntriples'     #
 	'text/vnd.graphviz':            'dot'          #
@@ -185,7 +186,7 @@ module.exports = class JsonldRapper
 		if inputType isnt 'jsonld' and inputType is outputType
 			return cb null, input
 
-		log.debug "Converting from '#{inputType}' to '#{outputType}'"
+		log.silly "Converting from '#{inputType}' to '#{outputType}'"
 
 		# Convert a JSON-LD string / object ...
 		if inputType is 'jsonld'
