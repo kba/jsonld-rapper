@@ -194,15 +194,15 @@ module.exports = class JsonldRapper
 			# to JSON-LD
 			if outputType is 'jsonld'
 				@_jsonld_to_jsonld input, methodOpts, cb
-			# to RDF or JSON-N3
+			# JSON-N3
+			else if outputType is 'json3'
+				@_jsonld_to_json3 input, methodOpts, cb
+			# to RDF
 			else
 				JsonLD.toRDF input, methodOpts.jsonld_toRDF, (err, nquads) =>
 					return cb @_error(400, "jsonld-js could not convert this to N-QUADS", err) if err
-					if outputType is 'json3'
-						@_nquads_to_json3 nquads, cb
-					else
-						return cb null, nquads if outputType is 'nquads'
-						return @_to_rdf nquads, 'nquads', outputType, methodOpts, cb
+					return cb null, nquads if outputType is 'nquads'
+					return @_to_rdf nquads, 'nquads', outputType, methodOpts, cb
 
 		# Convert a JSON-N3 string / object
 		else if inputType is 'json3'
@@ -324,6 +324,20 @@ module.exports = class JsonldRapper
 		writer = N3.Writer({prefixes})
 		writer.addTriple triple for triple in input
 		return writer.end cb
+
+	_jsonld_to_json3: (input, opts, cb) ->
+		JsonLD.toRDF input, {}, (err, triples) ->
+			converted = []
+			for triple in triples['@default']
+				convertedTriple = {}
+				for pos,desc of triple
+					if desc.type is 'IRI' or desc.type is 'blank node'
+						convertedTriple[pos] = desc.value
+					else if desc.type is 'literal'
+						convertedTriple[pos] = "\"#{desc.value}\"^^#{desc.datatype}"
+					else
+						cb Error("Unsupported type")
+			cb null, converted
 
 	_nquads_to_json3: (nquads, cb) ->
 		ret = []
