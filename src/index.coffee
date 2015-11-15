@@ -336,7 +336,8 @@ module.exports = class JsonldRapper
 					else if desc.type is 'literal'
 						convertedTriple[pos] = "\"#{desc.value}\"^^#{desc.datatype}"
 					else
-						cb Error("Unsupported type")
+						return cb Error("Unsupported type: #{desc.type}")
+				converted.push convertedTriple
 			cb null, converted
 
 	_nquads_to_json3: (nquads, cb) ->
