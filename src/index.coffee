@@ -89,7 +89,7 @@ _outputTypeMap = {
 	'application/n-triples':        'ntriples'     #
 	'text/vnd.graphviz':            'dot'          #
 	'application/x-turtle':         'turtle'       #
-	'text/rdf+n3':                  'turtle'       #
+	'text/n3':                      'turtle'       #
 	'text/turtle':                  'turtle'       #
 	'application/nquads':           'nquads'       #
 	'application/rdf+xml':          'rdfxml'       #
