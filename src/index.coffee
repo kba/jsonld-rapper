@@ -96,9 +96,6 @@ _outputTypeMap = {
 	'text/xml':                     'rdfxml'
 	'text/html':                    'html'         # HTML table
 	'application/atom+xml':         'atom'         #
-	'.nt':                          'ntriples'
-	'.n3':                          'turtle'
-	'.rdf':                         'rdfxml'
 }
 SUPPORTED_OUTPUT_TYPE = {}
 for type, rapperType of _outputTypeMap
