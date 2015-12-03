@@ -3,6 +3,8 @@ jsonld-rapper
 
 Convert between RDF and JSON-LD using rapper
 
+[![Build Status](https://travis-ci.org/infolis/jsonld-rapper.svg?branch=master)](https://travis-ci.org/infolis/jsonld-rapper)
+
 ## Installation
 
 This module requires the `rapper` utility, version **>=2.0.14** to be in `$PATH`.
