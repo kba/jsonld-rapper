@@ -22,7 +22,6 @@
   "dependencies": {
     "async": "^1.5.0",
     "colors": "^1.1.2",
-    "deepmerge": "^0.2.7",
     "infolis-logging": "0.0.4",
     "jsonld": "^0.4.2",
     "jsonld-common-contexts": "0.0.12",
