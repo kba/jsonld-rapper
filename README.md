@@ -107,3 +107,17 @@ for (profile in j2r.JSONLD_PROFILE) {
 // FLATTENED_EXPANDED =>   'http://www.w3.org/ns/json-ld#flattened+expanded'
 // EXPANDED =>     'http://www.w3.org/ns/json-ld#expanded'
 ```
+
+## Rights
+
+This library is [licensed](./LICENSE) under the terms of the [MIT license](http://opensource.org/licenses/MIT).
+
+Library                                                    | License
+--------                                                   | --------
+[async](https://github.com/caolan/async)                   | [MIT](http://opensource.org/licenses/MIT)
+[colors](https://github.com/Marak/colors.js)               | [MIT](http://opensource.org/licenses/MIT)
+[merge](https://github.com/yeikos/js.merge)                | [MIT](http://opensource.org/licenses/MIT)
+[jsonld](https://github.com/digitalbazaar/jsonld.js)       | [BSD 3-Clause](http://opensource.org/licenses/BSD-3-Clause)
+[n3](https://github.com/RubenVerborgh/N3.js)               | [MIT](http://opensource.org/licenses/MIT)
+[which](https://github.com/isaacs/node-which)              | [ISC](http://opensource.org/licenses/ISC)
+[which](https://github.com/infolis/jsonld-common-contexts) | [MIT](http://opensource.org/licenses/MIT)
