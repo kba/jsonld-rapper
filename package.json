@@ -3,7 +3,7 @@
   "version": "0.2.2",
   "description": "Convert between RDF and JSON-LD using rapper",
   "scripts": {
-    "test": "coffee test/*",
+    "test": "for s in test/*.coffee;do coffee $s;done",
     "docs": "docker -i src -o apidocs -s -n -c vs",
     "compile": "coffee -c -o lib src",
     "clean": "rm -r apidocs lib ; true",
@@ -22,7 +22,6 @@
   "dependencies": {
     "async": "^1.5.0",
     "colors": "^1.1.2",
-    "infolis-logging": "0.0.4",
     "jsonld": "^0.4.2",
     "jsonld-common-contexts": "0.0.12",
     "merge": "^1.2.0",
@@ -33,7 +32,8 @@
     "coffee-script": "^1.9.1",
     "docker": "^0.2.14",
     "faucet": "0.0.1",
-    "tape": "^4.0.0"
+    "tape": "^4.0.0",
+    "easylog": "0.0.10"
   },
   "main": "lib/index.js"
 }

@@ -8,7 +8,7 @@ N3             = require 'n3'
 Which          = require 'which'
 CommonContexts = require 'jsonld-common-contexts'
 
-log = require('infolis-logging')(module)
+# log = require('easylog')(module)
 
 ###
 
@@ -182,7 +182,7 @@ module.exports = class JsonldRapper
 		if inputType isnt 'jsonld' and inputType is outputType
 			return cb null, input
 
-		log.silly "Converting from '#{inputType}' to '#{outputType}'"
+		# log.silly "Converting from '#{inputType}' to '#{outputType}'"
 
 		# Convert a JSON-LD string / object ...
 		if inputType is 'jsonld'
@@ -262,7 +262,7 @@ module.exports = class JsonldRapper
 				else
 					return cb @_error(400, "Can't inject namespaces for inputType #{inputType}")
 
-		log.silly "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
+		# log.silly "Spawn `rapper` with a '#{inputType}' parser and a serializer producing '#{outputType}'"
 		rapperArgs = ["-i", inputType, "-o", outputType]
 		rapperArgs.push arg for arg in @curie.namespaces('rapper-args')
 		rapperArgs.push "-"
