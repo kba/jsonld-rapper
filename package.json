@@ -20,13 +20,13 @@
   },
   "homepage": "https://github.com/kba/jsonld-rapper",
   "dependencies": {
-    "async": "^1.5.0",
+    "async": "^1.5.2",
     "colors": "^1.1.2",
-    "jsonld": "^0.4.2",
-    "jsonld-common-contexts": "0.1.0",
+    "jsonld": "^0.4.12",
+    "jsonld-common-contexts": "^0.1.1",
     "merge": "^1.2.0",
     "n3": "^0.4.5",
-    "which": "^1.2.0"
+    "which": "^1.3.0"
   },
   "devDependencies": {
     "coffee-script": "^1.9.1",
